@@ -1,9 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-
-import { FirebaseProvider } from "./contexts/FirebaseContext";
-//import { JWTProvider } from "./contexts/JWTContext";
-//import { Auth0Provider } from "./contexts/Auth0Context";
+import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
 
 import routes, { renderRoutes } from "./routes";
 import { BASENAME } from "./config/constant";
@@ -11,11 +7,7 @@ import { BASENAME } from "./config/constant";
 const App = () => {
   return (
     <React.Fragment>
-        <Router basename={BASENAME}>
-            <FirebaseProvider>
-              {renderRoutes(routes)}
-            </FirebaseProvider>
-        </Router>
+      <Router basename={BASENAME}>{renderRoutes(routes)}</Router>
     </React.Fragment>
   );
 };

@@ -1,24 +1,19 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { ListGroup, Dropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
-import ChatList from "./ChatList";
 import { ConfigContext } from "../../../../contexts/ConfigContext";
-import useAuth from "../../../../hooks/useAuth";
 
-import avatar1 from "../../../../assets/images/user/avatar-1.jpg";
+import avatar1 from "../../../../assets/images/user/avatar-2.jpg";
 
 const NavRight = () => {
   const configContext = useContext(ConfigContext);
-  const { logout } = useAuth();
   const { rtlLayout } = configContext.state;
-
-  const [listOpen, setListOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       //handleClose();
-      await logout();
+      // await logout();
     } catch (err) {
       console.error(err);
     }
@@ -86,7 +81,6 @@ const NavRight = () => {
           </Dropdown>
         </ListGroup.Item>
       </ListGroup>
-      <ChatList listOpen={listOpen} closed={() => setListOpen(false)} />
     </React.Fragment>
   );
 };
