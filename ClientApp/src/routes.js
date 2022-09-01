@@ -78,6 +78,11 @@ const routes = [
         component: lazy(() => import("./views/Branch/Branches")),
       },
       {
+        exact: true,
+        path: "/quatation/form",
+        component: lazy(() => import("./views/Quotation/Quotation")),
+      },
+      {
         path: "*",
         exact: true,
         component: () => <Redirect to={BASE_URL} />,
