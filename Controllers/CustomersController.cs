@@ -50,7 +50,7 @@ namespace Quotations.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var customerDb =
-                await _context.Customers.SingleOrDefaultAsync(u => u.Id == Id);
+                await _context.Customers.AsNoTracking().SingleOrDefaultAsync(u => u.Id == Id);
 
             if (customerDb != null)
             {
@@ -58,7 +58,7 @@ namespace Quotations.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(customerDb);
+            return Ok(customer);
         }
     }
 }

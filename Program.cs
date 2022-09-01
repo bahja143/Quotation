@@ -6,6 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<QuotationDbContext>();
+builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+               {
+                   builder.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+               }));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -15,6 +21,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseCors("MyPolicy");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();

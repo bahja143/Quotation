@@ -58,6 +58,26 @@ const routes = [
         component: lazy(() => import("./views/dashboard/DashDefault")),
       },
       {
+        exact: true,
+        path: "/setup/users",
+        component: lazy(() => import("./views/User/Users")),
+      },
+      {
+        exact: true,
+        path: "/setup/Customers",
+        component: lazy(() => import("./views/Customer/Customers")),
+      },
+      {
+        exact: true,
+        path: "/setup/Companies",
+        component: lazy(() => import("./views/Company/Companies")),
+      },
+      {
+        exact: true,
+        path: "/setup/branches",
+        component: lazy(() => import("./views/Branch/Branches")),
+      },
+      {
         path: "*",
         exact: true,
         component: () => <Redirect to={BASE_URL} />,

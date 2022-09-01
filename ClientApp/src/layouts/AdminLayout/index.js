@@ -3,18 +3,23 @@ import React, { useContext, useEffect, useRef } from "react";
 import Navigation from "./Navigation";
 import NavBar from "./NavBar";
 import Breadcrumb from "./Breadcrumb";
+import { ToastContainer } from "react-toastify";
 
 import useWindowSize from "../../hooks/useWindowSize";
 import useOutsideClick from "../../hooks/useOutsideClick";
 import { ConfigContext } from "../../contexts/ConfigContext";
 import * as actionType from "../../store/actions";
 
+import "react-toastify/dist/ReactToastify.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import "react-datetime/css/react-datetime.css";
+
 const AdminLayout = ({ children }) => {
   const windowSize = useWindowSize();
   const ref = useRef();
   const configContext = useContext(ConfigContext);
 
-  const { collapseMenu, layout, subLayout, headerFixedLayout, configBlock } =
+  const { collapseMenu, layout, subLayout, headerFixedLayout } =
     configContext.state;
   const { dispatch } = configContext;
 
@@ -61,6 +66,7 @@ const AdminLayout = ({ children }) => {
       <div className="pcoded-main-container">
         <div className={mainClass.join(" ")}>
           <div className="pcoded-content">
+            <ToastContainer />
             <div className="pcoded-inner-content">
               <Breadcrumb />
               {children}

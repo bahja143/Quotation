@@ -60,7 +60,7 @@ namespace Quotations.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var userDb =
-                await _context.Users.SingleOrDefaultAsync(u => u.Id == Id);
+                await _context.Users.AsNoTracking().SingleOrDefaultAsync(u => u.Id == Id);
 
             if (userDb != null)
             {
@@ -68,7 +68,7 @@ namespace Quotations.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(userDb);
+            return Ok(user);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Quotations.Controllers
         [HttpGet]
         public async Task<ActionResult> getAll()
         {
-            return Ok(await _context.Companies.ToListAsync());
+            return Ok(await _context.Companies.Include(c => c.Customer).ToListAsync());
         }
 
         [HttpGet("{id}")]
@@ -50,7 +50,8 @@ namespace Quotations.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var companyDb =
-                await _context.Companies.SingleOrDefaultAsync(u => u.Id == Id);
+                await _context.Companies.Include(c => c.Customer).AsNoTracking().SingleOrDefaultAsync(u => u.Id == Id);
+            company.Customer = await _context.Customers.SingleOrDefaultAsync(c => c.Id == company.CustomerId);
 
             if (companyDb != null)
             {
@@ -58,7 +59,7 @@ namespace Quotations.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(companyDb);
+            return Ok(company);
         }
     }
 }

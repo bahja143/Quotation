@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "Quation": {
+    "Quotations": {
       "commandName": "Project",
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7292;http://localhost:5292",

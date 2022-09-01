@@ -18,7 +18,7 @@ namespace Quotations.Controllers
         [HttpGet]
         public async Task<ActionResult> getAll()
         {
-            return Ok(await _context.Branches.ToListAsync());
+            return Ok(await _context.Branches.Include(b => b.Company).ToListAsync());
         }
 
         [HttpGet("{id}")]
@@ -49,7 +49,8 @@ namespace Quotations.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var branchDb =
-                await _context.Branches.SingleOrDefaultAsync(u => u.Id == Id);
+                await _context.Branches.AsNoTracking().SingleOrDefaultAsync(u => u.Id == Id);
+            branch.Company = await _context.Companies.SingleOrDefaultAsync(b => b.Id == branch.CompanyId);
 
             if (branchDb != null)
             {
@@ -57,7 +58,7 @@ namespace Quotations.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return Ok(branchDb);
+            return Ok(branch);
         }
     }
 }
