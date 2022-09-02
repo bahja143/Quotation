@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Formik } from "formik";
-import Fontawesome from "react-fontawesome";
 import * as Yup from "yup";
+
+import Fontawesome from "react-fontawesome";
 
 import {
   Col,
@@ -42,6 +43,17 @@ const schema = Yup.object({
   rentSum: Yup.number().required().label("Rental sum"),
   date: Yup.date().required().label("Date"),
 });
+const quotationDetailSchema = Yup.object({
+  id: Yup.number(),
+  make: Yup.string().required().label("Make"),
+  model: Yup.string().required().label("Model"),
+  group: Yup.string().required().label("Group"),
+  remark: Yup.string().label("Remark"),
+  Services: Yup.array().label("Services"),
+  checkInLocation: Yup.string().required().label("Check In Location"),
+  checkOutLocation: Yup.string().required().label("Check Out Location"),
+  numberOfVehicles: Yup.number().required().label("Number Of Vehicles"),
+});
 
 export default function Quotation() {
   const [quotation] = useState({
@@ -57,6 +69,7 @@ export default function Quotation() {
     date: "",
   });
   const [quotationDetail] = useState({
+    id: "",
     make: "",
     model: "",
     group: "",
@@ -86,7 +99,11 @@ export default function Quotation() {
 
   return (
     <>
-      <QuotationDetailModel show={true} quotationDetail={quotationDetail} />
+      <QuotationDetailModel
+        show={true}
+        quotationDetail={quotationDetail}
+        quotationDetailSchema={quotationDetailSchema}
+      />
       <Formik initialValues={quotation} validationSchema={schema}>
         {() => (
           <Card>

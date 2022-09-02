@@ -18,6 +18,8 @@ namespace Quotations.Modal
         public DateTime ExpiryDate { get; set; }
         [Required]
         public DateTime Date { get; set; }
+        [Required]
+        public List<QuotationDetail> Details { get; set; }
 
     }
 }

@@ -5,9 +5,6 @@ namespace Quotations.Modal
     public class QuotationDetail
     {
         public int Id { get; set; }
-        public Quotation? Quotation { get; set; }
-        [Required]
-        public int QuotationId { get; set; }
         [Required]
         public string Make { get; set; }
         [Required]
