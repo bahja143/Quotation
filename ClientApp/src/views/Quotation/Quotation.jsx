@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Formik } from "formik";
-import * as Yup from "yup";
+import FontAwesome from "react-fontawesome";
 
-import Fontawesome from "react-fontawesome";
+import * as Yup from "yup";
 
 import {
   Col,
@@ -30,6 +30,19 @@ const categories = [
   { label: "Domestic", values: "Domestic" },
   { label: "International", values: "International" },
 ];
+const componentsData = [
+  { id: 0, serviceName: "Accessories", status: false, amount: "" },
+  { id: 0, serviceName: "Presel fuel", status: false, amount: "" },
+  { id: 0, serviceName: "Collection", status: false, amount: "" },
+  { id: 0, serviceName: "Delivery", status: false, amount: "" },
+  { id: 0, serviceName: "SCDW", status: false, amount: "" },
+  { id: 0, serviceName: "WS", status: false, amount: "" },
+];
+const accessoriesData = [
+  { id: 0, serviceName: "Baby Seat", status: false, amount: "", quantity: "" },
+  { id: 0, serviceName: "Wifi", status: false, amount: "", quantity: "" },
+  { id: 0, serviceName: "ADI", status: false, total: "", quantity: "" },
+];
 
 const schema = Yup.object({
   id: Yup.number(),
@@ -39,8 +52,17 @@ const schema = Yup.object({
   debitorId: Yup.number().required().label("Debitor"),
   expiryDate: Yup.date().required().label("Expiry date"),
   rentStartDate: Yup.date().required().label("Rental start date"),
-  rentEndDate: Yup.date().required().label("Rental end date"),
+  rentEndDate: Yup.date()
+    .when(
+      "rentStartDate",
+      (rentStartDate, yup) =>
+        rentStartDate &&
+        yup.min(rentStartDate, "Rent end date cannot be before rent start date")
+    )
+    .required()
+    .label("Rental end date"),
   rentSum: Yup.number().required().label("Rental sum"),
+  details: Yup.array().min(1).label("Detail"),
   date: Yup.date().required().label("Date"),
 });
 const quotationDetailSchema = Yup.object({
@@ -56,7 +78,7 @@ const quotationDetailSchema = Yup.object({
 });
 
 export default function Quotation() {
-  const [quotation] = useState({
+  const [quotation, setQuotation] = useState({
     id: 0,
     category: "",
     companyId: "",
@@ -66,22 +88,26 @@ export default function Quotation() {
     rentStartDate: "",
     rentEndDate: "",
     rentSum: "",
+    details: [],
     date: "",
   });
-  const [quotationDetail] = useState({
+  const [quotationDetail, setQuotationDetail] = useState({
     id: "",
     make: "",
     model: "",
     group: "",
     remark: "",
-    Services: "",
+    services: [],
     checkInLocation: "",
     checkOutLocation: "",
     numberOfVehicles: "",
   });
-  const [companies, setCompanies] = useState([]);
+  const [show, setShow] = useState(false);
   const [branches, setBranches] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [components, setComponents] = useState(componentsData);
+  const [accessories, setAccessories] = useState(accessoriesData);
 
   const handleLoad = async () => {
     const response = await companyApi.getAll();
@@ -92,6 +118,66 @@ export default function Quotation() {
     if (response1.ok) setBranches(response1.data);
     if (response2.ok) setCustomers(response2.data);
   };
+  const handleUpdateService = (service) => {
+    const data = { ...quotationDetail };
+
+    if (data.services.find((s) => s.serviceName === service.serviceName)) {
+      data.services.map((s) => {
+        if (s.serviceName === service.serviceName) {
+          s.amount = service.amount;
+
+          return s;
+        }
+        return s;
+      });
+    }
+
+    setQuotationDetail({ ...data });
+  };
+  const handleAddService = (service) => {
+    const data = { ...quotationDetail };
+
+    if (service.status) {
+      if (data.services.find((s) => s.serviceName === service.serviceName)) {
+        data.services.map((s) => {
+          if (s.serviceName === service.serviceName) {
+            s.amount = service.amount;
+
+            return s;
+          }
+          return s;
+        });
+
+        setQuotationDetail({ ...data });
+      } else {
+        data.services.push(service);
+      }
+    } else {
+      data.services = data.services.filter(
+        (s) => s.serviceName !== service.serviceName
+      );
+      setQuotationDetail({ ...data });
+    }
+  };
+  const handleAddCostComponent = (values) => {
+    setQuotation({
+      ...quotation,
+      details: [...quotation.details, values],
+    });
+    setShow(false);
+  };
+  const handleShowDetail = (setFieldTouched, values) => {
+    setFieldTouched("expiryDate");
+    setFieldTouched("rentStartDate");
+    setFieldTouched("rentEndDate");
+
+    if (
+      values["expiryDate"] &&
+      values["rentStartDate"] &&
+      values["rentEndDate"]
+    )
+      return setShow(true);
+  };
 
   useEffect(() => {
     handleLoad();
@@ -100,12 +186,21 @@ export default function Quotation() {
   return (
     <>
       <QuotationDetailModel
-        show={true}
+        show={show}
+        setShow={setShow}
+        components={components}
+        accessories={accessories}
+        setComponents={setComponents}
+        setAccessories={setAccessories}
+        componentsData={componentsData}
         quotationDetail={quotationDetail}
+        handleAddService={handleAddService}
+        handleUpdateService={handleUpdateService}
         quotationDetailSchema={quotationDetailSchema}
+        handleAddCostComponent={handleAddCostComponent}
       />
       <Formik initialValues={quotation} validationSchema={schema}>
-        {() => (
+        {({ values, setFieldTouched }) => (
           <Card>
             <Card.Header>
               <Card.Title>Quotation Form</Card.Title>
@@ -217,49 +312,59 @@ export default function Quotation() {
                     <Card.Header>
                       Cost Details
                       <Card.Text className="text-right">
-                        <Button>
-                          <Fontawesome name="fas fa-plus text-white" /> Add New
+                        <Button
+                          onClick={() =>
+                            handleShowDetail(setFieldTouched, values)
+                          }
+                        >
+                          <FontAwesome name="fas fa-plus text-white" /> Add New
                           Cost Components
                         </Button>
                       </Card.Text>
                     </Card.Header>
-                    <Table>
-                      <thead>
-                        <th>Make</th>
-                        <th>Model</th>
-                        <th>Group</th>
-                        <th>No Of Vehicle</th>
-                        <th>Rental Sum</th>
-                        <th>Total</th>
-                        <th></th>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td>Nissan</td>
-                          <td>Sunny</td>
-                          <td>G</td>
-                          <td>2</td>
-                          <td>100</td>
-                          <td>10</td>
-                          <td>
-                            <>
-                              <Button size="sm" variant="secondary">
-                                {" "}
-                                <Fontawesome name="fas fa-eye text-white" />
-                              </Button>
-                              <Button size="sm" variant="success">
-                                {" "}
-                                <Fontawesome name="fas fa-edit text-white" />
-                              </Button>
-                              <Button size="sm" variant="danger">
-                                {" "}
-                                <Fontawesome name="fas fa-trash-can text-white" />
-                              </Button>
-                            </>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </Table>
+                    {quotation.details?.length > 0 && (
+                      <Table>
+                        <thead>
+                          <tr>
+                            <th>Make</th>
+                            <th>Model</th>
+                            <th>Group</th>
+                            <th>No Of Vehicle</th>
+                            <th>Rental Sum</th>
+                            <th>Total</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {quotation.details?.map((d) => (
+                            <tr>
+                              <td>{d.make}</td>
+                              <td>{d.model}</td>
+                              <td>{d.group}</td>
+                              <td>{d.numberOfVehicles}</td>
+                              <td>{values["rentSum"]}</td>
+                              <td>{values["rentSum"] * d.numberOfVehicles}</td>
+                              <td>
+                                <>
+                                  <Button size="sm" variant="secondary">
+                                    {" "}
+                                    <FontAwesome name="fas fa-eye text-white" />
+                                  </Button>
+                                  <Button size="sm" variant="success">
+                                    {" "}
+                                    <FontAwesome name="fas fa-edit text-white" />
+                                  </Button>
+                                  <Button size="sm" variant="danger">
+                                    {" "}
+                                    <FontAwesome name="fas fa-trash-can text-white" />
+                                  </Button>
+                                </>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    )}
                   </Card>
                 </Col>
               </Row>

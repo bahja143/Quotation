@@ -15,12 +15,14 @@ const DateField = ({ name, label, required }) => {
       </FormLabel>
       <DateTime
         onChange={(e) => setFieldValue(name, e._d)}
-        onBlur={() => setFieldTouched(name)}
+        onClose={() => setFieldTouched(name)}
         value={values[name] && new Date(values[name])}
         timeFormat={false}
         closeOnSelect
       />
-      {errors[name] ? <div className="text-danger">{errors[name]}</div> : null}
+      {errors[name] && touched[name] ? (
+        <div className="text-danger">{errors[name]}</div>
+      ) : null}
     </FormGroup>
   );
 };

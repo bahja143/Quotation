@@ -20,28 +20,110 @@ const groups = [
   { label: "E", value: "E" },
   { label: "F", value: "F" },
 ];
-const components = [
-  "Accessories",
-  "Presel fuel",
-  "Collection",
-  "Delivery",
-  "SCDW",
-  "WS",
-];
-const accessories = ["Baby Seat", "Wifi", "ADI"];
 
 export default function QuotationDetailModel({
   show,
+  setShow,
+  components,
+  accessories,
+  setComponents,
+  componentsData,
+  setAccessories,
   quotationDetail,
+  handleAddService,
+  handleUpdateService,
   quotationDetailSchema,
+  handleAddCostComponent,
 }) {
+  const VatPercentage = 5;
+  const handleOnChangeComponent = (service) => {
+    setComponents([
+      ...componentsData.map((c) => {
+        if (c.serviceName === service.serviceName) {
+          c.amount = service.amount;
+          handleUpdateService(c);
+
+          return c;
+        }
+
+        return c;
+      }),
+    ]);
+  };
+  const handleOnChangeAccessories = (service) => {
+    setAccessories([
+      ...accessories.map((c) => {
+        if (c.serviceName === service.serviceName) {
+          c.total = service.total;
+          c.quantity = service.quantity;
+          handleUpdateService({
+            ...service,
+            amount: service.total * service.quantity,
+          });
+
+          console.log({
+            ...service,
+          });
+
+          return c;
+        }
+
+        return c;
+      }),
+    ]);
+  };
+  const handleComponentService = (service) => {
+    setComponents([
+      ...components.map((c) => {
+        if (c.serviceName === service.serviceName) {
+          c.status = c.status ? false : true;
+
+          return c;
+        }
+
+        return c;
+      }),
+    ]);
+
+    handleAddService({
+      ...components.find((c) => c.serviceName === service.serviceName),
+    });
+  };
+  const handleAccessoriesService = (service) => {
+    setAccessories([
+      ...accessories.map((c) => {
+        if (c.serviceName === service.serviceName) {
+          c.status = c.status ? false : true;
+
+          return c;
+        }
+
+        return c;
+      }),
+    ]);
+
+    let result = accessories
+      .map((a) => {
+        a.amount = a.total * a.quantity;
+
+        return a;
+      })
+      .find((c) => c.serviceName === service.serviceName);
+
+    handleAddService({
+      ...result,
+    });
+  };
+
   return (
     <Modal show={show} size="xl">
       <Modal.Header>
         <Modal.Title>Add New Quotational Detail</Modal.Title>
       </Modal.Header>
       <Formik
+        enableReinitialize
         initialValues={quotationDetail}
+        onSubmit={handleAddCostComponent}
         validationSchema={quotationDetailSchema}
       >
         {() => (
@@ -82,6 +164,7 @@ export default function QuotationDetailModel({
                   <TextField
                     name="numberOfVehicles"
                     label="Number of Vehicles"
+                    type="number"
                     required
                   />
                 </Col>
@@ -97,33 +180,44 @@ export default function QuotationDetailModel({
                   <TextField name="remark" label="Remark" />
                 </Col>
               </Row>
-              <Row>
+              <Row className="mt-3">
                 <Col>
                   <Card>
-                    <Card.Header>
+                    <Card.Header className="bg-light">
                       <Card.Text>Add Cost Components</Card.Text>
                     </Card.Header>
                     <Table>
                       <thead>
-                        <th>Selection</th>
-                        <th>Accessories</th>
-                        <th>Amount</th>
+                        <tr>
+                          <th>Selection</th>
+                          <th>Accessories</th>
+                          <th>Amount</th>
+                        </tr>
                       </thead>
                       <tbody>
                         {components.map((c) => (
-                          <tr>
+                          <tr key={c.serviceName}>
                             <td>
                               <input
                                 type="checkbox"
                                 name="check"
+                                checked={c.status}
+                                onChange={() => handleComponentService(c)}
                                 className="form-control"
                               />
                             </td>
-                            <td>{c}</td>
+                            <td>{c.serviceName}</td>
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 name="amount"
+                                value={c.amount}
+                                onChange={(e) =>
+                                  handleOnChangeComponent({
+                                    serviceName: c.serviceName,
+                                    amount: e.target.value,
+                                  })
+                                }
                                 className="form-control"
                               />
                             </td>
@@ -135,38 +229,56 @@ export default function QuotationDetailModel({
                 </Col>
                 <Col>
                   <Card>
-                    <Card.Header>
+                    <Card.Header className="bg-light">
                       <Card.Text>Vehicle Accessories/Extra Selection</Card.Text>
                     </Card.Header>
                     <Table>
                       <thead>
-                        <th>Selection</th>
-                        <th>Accessories</th>
-                        <th>Quantity</th>
-                        <th>Amount</th>
+                        <tr>
+                          <th>Selection</th>
+                          <th>Accessories</th>
+                          <th>Quantity</th>
+                          <th>Amount</th>
+                        </tr>
                       </thead>
                       <tbody>
                         {accessories.map((c) => (
-                          <tr>
+                          <tr key={c.serviceName}>
                             <td>
                               <input
                                 type="checkbox"
                                 name="check"
+                                checked={c.status}
+                                onChange={() => handleAccessoriesService(c)}
                                 className="form-control"
                               />
                             </td>
-                            <td>{c}</td>
+                            <td>{c.serviceName}</td>
                             <td>
                               <input
-                                type="text"
+                                type="number"
                                 name="quantity"
+                                onChange={(e) =>
+                                  handleOnChangeAccessories({
+                                    serviceName: c.serviceName,
+                                    quantity: e.target.value,
+                                    total: c.total,
+                                  })
+                                }
                                 className="form-control"
                               />
                             </td>
                             <td>
                               <input
-                                type="text"
-                                name="amount"
+                                type="number"
+                                name="total"
+                                onChange={(e) =>
+                                  handleOnChangeAccessories({
+                                    serviceName: c.serviceName,
+                                    total: e.target.value,
+                                    quantity: c.quantity,
+                                  })
+                                }
                                 className="form-control"
                               />
                             </td>
@@ -177,43 +289,61 @@ export default function QuotationDetailModel({
                   </Card>
                 </Col>
               </Row>
-              <Row>
-                <Col>
-                  <Col>
-                    <Card>
-                      <Table>
-                        <thead>
-                          <th>VARIABLE NAME</th>
-                          <th>AMOUNT</th>
-                          <th>VAT</th>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td>
-                              RENTAL SUM(Rate should be taken from the rental
-                              rate table provided based on the vehicle group and
-                              the rental duration)
-                            </td>
-                            <td>
-                              Value for single vehicle should be multiplied with
-                              the no. of vehicles entered and should be listed
-                              by default
-                            </td>
-                            <td>
-                              5% of the value displayed in amount field should
-                              be displayed by default
-                            </td>
-                          </tr>
-                        </tbody>
-                      </Table>
-                    </Card>
-                  </Col>
-                </Col>
-              </Row>
+              {quotationDetail?.services.length > 0 && (
+                <Card>
+                  <Table bordered size="sm" responsive>
+                    <thead className="thead-light">
+                      <tr>
+                        <th className="text-center">VARIABLE NAME</th>
+                        <th className="text-center">AMOUNT</th>
+                        <th className="text-center">VAT</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="text-wrap text-center">
+                          {" "}
+                          RENTAL SUM(Rate should be taken from the rental rate
+                          table provided based on the vehicle group and the
+                          rental duration)
+                        </td>
+                        <td className="text-wrap text-center">
+                          {" "}
+                          Value for single vehicle should be multiplied with the
+                          no. of vehicles entered and should be listed by
+                          default
+                        </td>
+                        <td className="text-wrap text-center">
+                          {" "}
+                          5% of the value displayed in amount field should be
+                          displayed by default
+                        </td>
+                      </tr>
+                      {quotationDetail?.services.map((s) => (
+                        <tr key={s.serviceName}>
+                          <td className="text-wrap  text-center">
+                            {s.serviceName}
+                          </td>
+                          <td className="text-wrap  text-center">
+                            {" "}
+                            {s.amount}
+                          </td>
+                          <td className="text-wrap  text-center">
+                            {Math.floor((VatPercentage / 100) * s.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card>
+              )}
             </Modal.Body>
             <Modal.Footer>
               <SubmitBtn title="Add" />
-              <Button variant="secondary"> Close</Button>
+              <Button variant="secondary" onClick={() => setShow(false)}>
+                {" "}
+                Close
+              </Button>
             </Modal.Footer>
           </>
         )}

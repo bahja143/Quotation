@@ -12,6 +12,7 @@ import * as actionType from "../../store/actions";
 
 import "react-toastify/dist/ReactToastify.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "react-datetime/css/react-datetime.css";
 
 const AdminLayout = ({ children }) => {
