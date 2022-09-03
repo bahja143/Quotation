@@ -24,10 +24,10 @@ const groups = [
 export default function QuotationDetailModel({
   show,
   setShow,
+  rentalSum,
   components,
   accessories,
   setComponents,
-  componentsData,
   setAccessories,
   quotationDetail,
   handleAddService,
@@ -38,7 +38,7 @@ export default function QuotationDetailModel({
   const VatPercentage = 5;
   const handleOnChangeComponent = (service) => {
     setComponents([
-      ...componentsData.map((c) => {
+      ...components.map((c) => {
         if (c.serviceName === service.serviceName) {
           c.amount = service.amount;
           handleUpdateService(c);
@@ -52,23 +52,16 @@ export default function QuotationDetailModel({
   };
   const handleOnChangeAccessories = (service) => {
     setAccessories([
-      ...accessories.map((c) => {
-        if (c.serviceName === service.serviceName) {
-          c.total = service.total;
-          c.quantity = service.quantity;
-          handleUpdateService({
-            ...service,
-            amount: service.total * service.quantity,
-          });
+      ...accessories.map((a) => {
+        if (a.serviceName === service.serviceName) {
+          a.total = service.total;
+          a.quantity = service.quantity;
+          handleUpdateService(a);
 
-          console.log({
-            ...service,
-          });
-
-          return c;
+          return a;
         }
 
-        return c;
+        return a;
       }),
     ]);
   };
@@ -104,7 +97,7 @@ export default function QuotationDetailModel({
 
     let result = accessories
       .map((a) => {
-        a.amount = a.total * a.quantity;
+        a.amount = 0;
 
         return a;
       })
@@ -173,7 +166,11 @@ export default function QuotationDetailModel({
                 <Col lg={4}>
                   <FormGroup>
                     <FormLabel>Rental Sum</FormLabel>
-                    <input className="form-control" disabled />
+                    <input
+                      value={rentalSum}
+                      className="form-control"
+                      disabled
+                    />
                   </FormGroup>
                 </Col>
                 <Col>
@@ -214,6 +211,7 @@ export default function QuotationDetailModel({
                                 value={c.amount}
                                 onChange={(e) =>
                                   handleOnChangeComponent({
+                                    id: c.id,
                                     serviceName: c.serviceName,
                                     amount: e.target.value,
                                   })
@@ -258,8 +256,10 @@ export default function QuotationDetailModel({
                               <input
                                 type="number"
                                 name="quantity"
+                                value={c.quantity}
                                 onChange={(e) =>
                                   handleOnChangeAccessories({
+                                    id: c.id,
                                     serviceName: c.serviceName,
                                     quantity: e.target.value,
                                     total: c.total,
@@ -272,8 +272,10 @@ export default function QuotationDetailModel({
                               <input
                                 type="number"
                                 name="total"
+                                value={c.total}
                                 onChange={(e) =>
                                   handleOnChangeAccessories({
+                                    id: c.id,
                                     serviceName: c.serviceName,
                                     total: e.target.value,
                                     quantity: c.quantity,
@@ -326,10 +328,13 @@ export default function QuotationDetailModel({
                           </td>
                           <td className="text-wrap  text-center">
                             {" "}
-                            {s.amount}
+                            {!s.total ? s.amount : s.quantity * s.total}
                           </td>
                           <td className="text-wrap  text-center">
-                            {Math.floor((VatPercentage / 100) * s.amount)}
+                            {Math.floor(
+                              (VatPercentage / 100) *
+                                (!s.total ? s.amount : s.quantity * s.total)
+                            )}
                           </td>
                         </tr>
                       ))}

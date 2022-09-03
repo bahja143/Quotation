@@ -21,6 +21,7 @@ import {
 } from "../../components/Form";
 
 import QuotationDetailModel from "./QuotationDetailModel";
+import ViewQuotationalDetailMODEL from "./ViewQuotationalDetailMODEL";
 
 import companyApi from "../../api/companiesApi";
 import branchesApi from "../../api/branchesApi";
@@ -39,8 +40,8 @@ const componentsData = [
   { id: 0, serviceName: "WS", status: false, amount: "" },
 ];
 const accessoriesData = [
-  { id: 0, serviceName: "Baby Seat", status: false, amount: "", quantity: "" },
-  { id: 0, serviceName: "Wifi", status: false, amount: "", quantity: "" },
+  { id: 0, serviceName: "Baby Seat", status: false, total: "", quantity: "" },
+  { id: 0, serviceName: "Wifi", status: false, total: "", quantity: "" },
   { id: 0, serviceName: "ADI", status: false, total: "", quantity: "" },
 ];
 
@@ -63,7 +64,6 @@ const schema = Yup.object({
     .label("Rental end date"),
   rentSum: Yup.number().required().label("Rental sum"),
   details: Yup.array().min(1).label("Detail"),
-  date: Yup.date().required().label("Date"),
 });
 const quotationDetailSchema = Yup.object({
   id: Yup.number(),
@@ -89,7 +89,6 @@ export default function Quotation() {
     rentEndDate: "",
     rentSum: "",
     details: [],
-    date: "",
   });
   const [quotationDetail, setQuotationDetail] = useState({
     id: "",
@@ -103,11 +102,29 @@ export default function Quotation() {
     numberOfVehicles: "",
   });
   const [show, setShow] = useState(false);
+  const [showView, setShowView] = useState(false);
   const [branches, setBranches] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [components, setComponents] = useState(componentsData);
-  const [accessories, setAccessories] = useState(accessoriesData);
+  const [components, setComponents] = useState([
+    { id: 0, serviceName: "Accessories", status: false, amount: "" },
+    { id: 0, serviceName: "Presel fuel", status: false, amount: "" },
+    { id: 0, serviceName: "Collection", status: false, amount: "" },
+    { id: 0, serviceName: "Delivery", status: false, amount: "" },
+    { id: 0, serviceName: "SCDW", status: false, amount: "" },
+    { id: 0, serviceName: "WS", status: false, amount: "" },
+  ]);
+  const [accessories, setAccessories] = useState([
+    {
+      id: 0,
+      serviceName: "Baby Seat",
+      status: false,
+      total: "",
+      quantity: "",
+    },
+    { id: 0, serviceName: "Wifi", status: false, total: "", quantity: "" },
+    { id: 0, serviceName: "ADI", status: false, total: "", quantity: "" },
+  ]);
 
   const handleLoad = async () => {
     const response = await companyApi.getAll();
@@ -125,6 +142,8 @@ export default function Quotation() {
       data.services.map((s) => {
         if (s.serviceName === service.serviceName) {
           s.amount = service.amount;
+          s.total = service.total ? service.total : "";
+          s.quantity = service.quantity ? service.quantity : "";
 
           return s;
         }
@@ -142,6 +161,8 @@ export default function Quotation() {
         data.services.map((s) => {
           if (s.serviceName === service.serviceName) {
             s.amount = service.amount;
+            s.total = s.total ? s.total : "";
+            s.quantity = s.quantity ? s.quantitle : "";
 
             return s;
           }
@@ -171,12 +192,146 @@ export default function Quotation() {
     setFieldTouched("rentStartDate");
     setFieldTouched("rentEndDate");
 
+    setQuotationDetail({
+      id: "",
+      make: "",
+      model: "",
+      group: "",
+      remark: "",
+      services: [],
+      checkInLocation: "",
+      checkOutLocation: "",
+      numberOfVehicles: "",
+    });
+    setAccessories([
+      {
+        id: 0,
+        serviceName: "Baby Seat",
+        status: false,
+        total: "",
+        quantity: "",
+      },
+      { id: 0, serviceName: "Wifi", status: false, total: "", quantity: "" },
+      { id: 0, serviceName: "ADI", status: false, total: "", quantity: "" },
+    ]);
+    setComponents([
+      { id: 0, serviceName: "Accessories", status: false, amount: "" },
+      { id: 0, serviceName: "Presel fuel", status: false, amount: "" },
+      { id: 0, serviceName: "Collection", status: false, amount: "" },
+      { id: 0, serviceName: "Delivery", status: false, amount: "" },
+      { id: 0, serviceName: "SCDW", status: false, amount: "" },
+      { id: 0, serviceName: "WS", status: false, amount: "" },
+    ]);
+
     if (
       values["expiryDate"] &&
       values["rentStartDate"] &&
       values["rentEndDate"]
-    )
+    ) {
       return setShow(true);
+    }
+  };
+  const handleUpdateDetail = (detail) => {
+    const services = [...detail.services?.map((s) => s.serviceName)];
+
+    setAccessories([
+      ...accessoriesData.map((a) => {
+        if (services.includes(a.serviceName)) {
+          a.status = true;
+          a.total = detail?.services?.find(
+            (s) => s.serviceName === a.serviceName
+          ).total;
+          a.quantity = detail?.services?.find(
+            (s) => s.serviceName === a.serviceName
+          ).quantity;
+        }
+        return a;
+      }),
+    ]);
+    setComponents([
+      ...componentsData.map((c) => {
+        if (services.includes(c.serviceName)) {
+          c.amount = detail?.services?.find(
+            (s) => s.serviceName === c.serviceName
+          ).amount;
+          c.status = true;
+        }
+        return c;
+      }),
+    ]);
+    handleDeleteDetail(detail);
+    setQuotationDetail(detail);
+    setShow(true);
+  };
+  const handleViewDetail = (detail) => {
+    setQuotationDetail(detail);
+    setShowView(true);
+  };
+  const handleDeleteDetail = (detail) => {
+    const data = [...quotation.details];
+    const index = data.indexOf(detail);
+    data.splice(index, 1);
+
+    setQuotation({ ...quotation, details: data });
+  };
+  const handleSubmit = (values) => {
+    console.log(values);
+  };
+  const handleDateDifference = (input1, input2) => {
+    let date1 = new Date(input1);
+    let date2 = new Date(input2);
+
+    if (!input1 || !input2) return "";
+
+    // To calculate the time difference of two dates
+    var Difference_In_Time = date2.getTime() - date1.getTime();
+
+    // To calculate the no. of days between two dates
+    var Difference_In_Days = Difference_In_Time / (1000 * 3600 * 24);
+
+    return Difference_In_Days + 1 + " Days";
+  };
+  const handleAdditionalCost = (details) => {
+    try {
+      if (details.length > 0) {
+        const sum = [
+          ...details?.map((d) =>
+            d.services
+              .map((s) => {
+                if (s.total) {
+                  s.amount = s.total * s.quantity;
+
+                  return s;
+                }
+
+                s.amount = parseInt(s.amount);
+                return s;
+              })
+              .map((s) => s.amount)
+              ?.reduce((a, b) => a + b)
+          ),
+        ]?.reduce((a, b) => a + b);
+
+        return sum;
+      }
+    } catch (error) {}
+  };
+  const handleTotalVehicles = (details) => {
+    try {
+      return details.map((d) => d.numberOfVehicles)?.reduce((a, b) => a + b);
+    } catch (error) {}
+  };
+  const handleTotalCost = (details, rentPerVehicle) => {
+    try {
+      const totalAdditionalCosts = handleAdditionalCost(details);
+      const numberOfVehicles = handleTotalVehicles(details);
+
+      if (totalAdditionalCosts && numberOfVehicles && rentPerVehicle) {
+        return numberOfVehicles * rentPerVehicle + totalAdditionalCosts;
+      }
+
+      return "";
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -184,23 +339,34 @@ export default function Quotation() {
   }, []);
 
   return (
-    <>
-      <QuotationDetailModel
-        show={show}
-        setShow={setShow}
-        components={components}
-        accessories={accessories}
-        setComponents={setComponents}
-        setAccessories={setAccessories}
-        componentsData={componentsData}
-        quotationDetail={quotationDetail}
-        handleAddService={handleAddService}
-        handleUpdateService={handleUpdateService}
-        quotationDetailSchema={quotationDetailSchema}
-        handleAddCostComponent={handleAddCostComponent}
-      />
-      <Formik initialValues={quotation} validationSchema={schema}>
-        {({ values, setFieldTouched }) => (
+    <Formik
+      initialValues={quotation}
+      onSubmit={handleSubmit}
+      enableReinitialize
+      validationSchema={schema}
+    >
+      {({ values, errors, setFieldTouched }) => (
+        <>
+          <ViewQuotationalDetailMODEL
+            show={showView}
+            setShow={setShowView}
+            rentalSum={values["rentSum"]}
+            quotationDetail={quotationDetail}
+          />
+          <QuotationDetailModel
+            show={show}
+            setShow={setShow}
+            components={components}
+            accessories={accessories}
+            rentalSum={values["rentSum"]}
+            setComponents={setComponents}
+            setAccessories={setAccessories}
+            quotationDetail={quotationDetail}
+            handleAddService={handleAddService}
+            handleUpdateService={handleUpdateService}
+            quotationDetailSchema={quotationDetailSchema}
+            handleAddCostComponent={handleAddCostComponent}
+          />
           <Card>
             <Card.Header>
               <Card.Title>Quotation Form</Card.Title>
@@ -275,7 +441,14 @@ export default function Quotation() {
                         required
                       />
                       <FormLabel>Rental Duration</FormLabel>
-                      <input className="form-control" disabled />
+                      <input
+                        className="form-control"
+                        value={handleDateDifference(
+                          values["rentStartDate"],
+                          values["rentEndDate"]
+                        )}
+                        disabled
+                      />
                     </Card.Body>
                   </Card>
                 </Col>
@@ -292,15 +465,30 @@ export default function Quotation() {
                       />
                       <FormGroup>
                         <FormLabel>Total Additional Cost</FormLabel>
-                        <input className="form-control" disabled />
+                        <input
+                          className="form-control"
+                          value={handleAdditionalCost(quotation.details)}
+                          disabled
+                        />
                       </FormGroup>
                       <FormGroup>
                         <FormLabel>Total Amount</FormLabel>
-                        <input className="form-control" disabled />
+                        <input
+                          className="form-control"
+                          value={handleTotalCost(
+                            quotation.details,
+                            values["rentSum"]
+                          )}
+                          disabled
+                        />
                       </FormGroup>
                       <FormGroup>
                         <FormLabel>Total Number Of Vehicles</FormLabel>
-                        <input className="form-control" disabled />
+                        <input
+                          className="form-control"
+                          value={handleTotalVehicles(quotation.details)}
+                          disabled
+                        />
                       </FormGroup>
                     </Card.Body>
                   </Card>
@@ -337,7 +525,7 @@ export default function Quotation() {
                         </thead>
                         <tbody>
                           {quotation.details?.map((d) => (
-                            <tr>
+                            <tr key={d.model}>
                               <td>{d.make}</td>
                               <td>{d.model}</td>
                               <td>{d.group}</td>
@@ -346,15 +534,27 @@ export default function Quotation() {
                               <td>{values["rentSum"] * d.numberOfVehicles}</td>
                               <td>
                                 <>
-                                  <Button size="sm" variant="secondary">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => handleViewDetail(d)}
+                                  >
                                     {" "}
                                     <FontAwesome name="fas fa-eye text-white" />
                                   </Button>
-                                  <Button size="sm" variant="success">
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => handleUpdateDetail(d)}
+                                  >
                                     {" "}
                                     <FontAwesome name="fas fa-edit text-white" />
                                   </Button>
-                                  <Button size="sm" variant="danger">
+                                  <Button
+                                    size="sm"
+                                    variant="danger"
+                                    onClick={() => handleDeleteDetail(d)}
+                                  >
                                     {" "}
                                     <FontAwesome name="fas fa-trash-can text-white" />
                                   </Button>
@@ -373,8 +573,8 @@ export default function Quotation() {
               <SubmitBtn title="Create" />
             </Card.Footer>
           </Card>
-        )}
-      </Formik>
-    </>
+        </>
+      )}
+    </Formik>
   );
 }

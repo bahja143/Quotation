@@ -3,9 +3,9 @@ import { Modal, Button, Col, Row } from "react-bootstrap";
 
 import {
   DateField,
-  SelectField,
   TextField,
   SubmitBtn,
+  SelectField,
 } from "../../components/Form";
 import nationalities from "../../data/nationalities.json";
 
