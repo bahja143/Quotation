@@ -31,6 +31,7 @@ export default function QuotationDetailModel({
   setAccessories,
   quotationDetail,
   handleAddService,
+  handleCloseModel,
   handleUpdateService,
   quotationDetailSchema,
   handleAddCostComponent,
@@ -261,8 +262,8 @@ export default function QuotationDetailModel({
                                   handleOnChangeAccessories({
                                     id: c.id,
                                     serviceName: c.serviceName,
-                                    quantity: e.target.value,
-                                    total: c.total,
+                                    quantity: parseInt(e.target.value),
+                                    total: parseInt(c.total),
                                   })
                                 }
                                 className="form-control"
@@ -277,8 +278,8 @@ export default function QuotationDetailModel({
                                   handleOnChangeAccessories({
                                     id: c.id,
                                     serviceName: c.serviceName,
-                                    total: e.target.value,
-                                    quantity: c.quantity,
+                                    total: parseInt(e.target.value),
+                                    quantity: parseInt(c.quantity),
                                   })
                                 }
                                 className="form-control"
@@ -345,7 +346,7 @@ export default function QuotationDetailModel({
             </Modal.Body>
             <Modal.Footer>
               <SubmitBtn title="Add" />
-              <Button variant="secondary" onClick={() => setShow(false)}>
+              <Button variant="secondary" onClick={handleCloseModel}>
                 {" "}
                 Close
               </Button>

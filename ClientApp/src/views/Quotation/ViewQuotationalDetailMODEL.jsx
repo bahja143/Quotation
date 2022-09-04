@@ -23,6 +23,7 @@ const groups = [
 
 export default function ViewQuotationalDetailMODEL({
   show,
+  values,
   setShow,
   rentalSum,
   quotationDetail,
@@ -39,7 +40,7 @@ export default function ViewQuotationalDetailMODEL({
       <Formik
         enableReinitialize
         initialValues={quotationDetail}
-        onSubmit={handleAddCostComponent}
+        onSubmit={(e) => handleAddCostComponent(e, values)}
         validationSchema={quotationDetailSchema}
       >
         {() => (

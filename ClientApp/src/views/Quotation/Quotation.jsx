@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Formik } from "formik";
 import FontAwesome from "react-fontawesome";
-
 import * as Yup from "yup";
 
 import {
@@ -63,7 +62,8 @@ const schema = Yup.object({
     .required()
     .label("Rental end date"),
   rentSum: Yup.number().required().label("Rental sum"),
-  details: Yup.array().min(1).label("Detail"),
+  details: Yup.array().label("Details"),
+  date: Yup.date(),
 });
 const quotationDetailSchema = Yup.object({
   id: Yup.number(),
@@ -89,9 +89,10 @@ export default function Quotation() {
     rentEndDate: "",
     rentSum: "",
     details: [],
+    date: new Date(),
   });
   const [quotationDetail, setQuotationDetail] = useState({
-    id: "",
+    id: 0,
     make: "",
     model: "",
     group: "",
@@ -125,6 +126,7 @@ export default function Quotation() {
     { id: 0, serviceName: "Wifi", status: false, total: "", quantity: "" },
     { id: 0, serviceName: "ADI", status: false, total: "", quantity: "" },
   ]);
+  const [updatedDetail, setUpdatedDetail] = useState({});
 
   const handleLoad = async () => {
     const response = await companyApi.getAll();
@@ -142,8 +144,8 @@ export default function Quotation() {
       data.services.map((s) => {
         if (s.serviceName === service.serviceName) {
           s.amount = service.amount;
-          s.total = service.total ? service.total : "";
-          s.quantity = service.quantity ? service.quantity : "";
+          s.total = service.total ? parseInt(service.total) : "";
+          s.quantity = service.quantity ? parseInt(service.quantity) : "";
 
           return s;
         }
@@ -161,8 +163,8 @@ export default function Quotation() {
         data.services.map((s) => {
           if (s.serviceName === service.serviceName) {
             s.amount = service.amount;
-            s.total = s.total ? s.total : "";
-            s.quantity = s.quantity ? s.quantitle : "";
+            s.total = s.total ? parseInt(s.total) : "";
+            s.quantity = s.quantity ? parseInt(s.quantity) : "";
 
             return s;
           }
@@ -188,10 +190,6 @@ export default function Quotation() {
     setShow(false);
   };
   const handleShowDetail = (setFieldTouched, values) => {
-    setFieldTouched("expiryDate");
-    setFieldTouched("rentStartDate");
-    setFieldTouched("rentEndDate");
-
     setQuotationDetail({
       id: "",
       make: "",
@@ -229,13 +227,34 @@ export default function Quotation() {
       values["rentEndDate"]
     ) {
       return setShow(true);
+    } else {
+      setFieldTouched("expiryDate");
+      setFieldTouched("rentStartDate");
+      setFieldTouched("rentEndDate");
     }
   };
   const handleUpdateDetail = (detail) => {
     const services = [...detail.services?.map((s) => s.serviceName)];
+    const accessData = [
+      ...accessoriesData.map((a) => {
+        a.status = false;
+        a.quantity = "";
+        a.total = "";
+
+        return a;
+      }),
+    ];
+    const compoData = [
+      ...componentsData.map((c) => {
+        c.status = false;
+        c.amount = "";
+
+        return c;
+      }),
+    ];
 
     setAccessories([
-      ...accessoriesData.map((a) => {
+      ...accessData.map((a) => {
         if (services.includes(a.serviceName)) {
           a.status = true;
           a.total = detail?.services?.find(
@@ -249,7 +268,7 @@ export default function Quotation() {
       }),
     ]);
     setComponents([
-      ...componentsData.map((c) => {
+      ...compoData.map((c) => {
         if (services.includes(c.serviceName)) {
           c.amount = detail?.services?.find(
             (s) => s.serviceName === c.serviceName
@@ -259,6 +278,7 @@ export default function Quotation() {
         return c;
       }),
     ]);
+    setUpdatedDetail(detail);
     handleDeleteDetail(detail);
     setQuotationDetail(detail);
     setShow(true);
@@ -273,9 +293,6 @@ export default function Quotation() {
     data.splice(index, 1);
 
     setQuotation({ ...quotation, details: data });
-  };
-  const handleSubmit = (values) => {
-    console.log(values);
   };
   const handleDateDifference = (input1, input2) => {
     let date1 = new Date(input1);
@@ -333,6 +350,38 @@ export default function Quotation() {
       return "";
     } catch (error) {}
   };
+  const handleCloseDetail = () => {
+    if (
+      updatedDetail.make &&
+      updatedDetail.model &&
+      updatedDetail.numberOfVehicles &&
+      updatedDetail.group
+    ) {
+      handleAddCostComponent(updatedDetail);
+      setUpdatedDetail({});
+    }
+    setShow(false);
+  };
+  const handleSubmit = (values) => {
+    const data = { ...values, details: quotation.details };
+    data.details.map((d) => {
+      d.services.map((s) => {
+        if (s.total) {
+          s.amount = 0;
+
+          return s;
+        }
+
+        s.total = 0;
+        s.quantity = 0;
+      });
+
+      d.id = 0;
+
+      return d;
+    });
+    console.log(data);
+  };
 
   useEffect(() => {
     handleLoad();
@@ -342,13 +391,13 @@ export default function Quotation() {
     <Formik
       initialValues={quotation}
       onSubmit={handleSubmit}
-      enableReinitialize
       validationSchema={schema}
     >
-      {({ values, errors, setFieldTouched }) => (
+      {({ values, setFieldTouched }) => (
         <>
           <ViewQuotationalDetailMODEL
             show={showView}
+            values={values}
             setShow={setShowView}
             rentalSum={values["rentSum"]}
             quotationDetail={quotationDetail}
@@ -363,6 +412,7 @@ export default function Quotation() {
             setAccessories={setAccessories}
             quotationDetail={quotationDetail}
             handleAddService={handleAddService}
+            handleCloseModel={handleCloseDetail}
             handleUpdateService={handleUpdateService}
             quotationDetailSchema={quotationDetailSchema}
             handleAddCostComponent={handleAddCostComponent}
@@ -424,7 +474,7 @@ export default function Quotation() {
                       <Card.Text>Costing Details</Card.Text>
                     </Card.Header>
                     <Card.Body>
-                      <DateField label="Quotation Date" name="Date" />
+                      <DateField label="Quotation Date" name="date" />
                       <DateField
                         label="Expiry Date"
                         name="expiryDate"
@@ -570,7 +620,10 @@ export default function Quotation() {
               </Row>
             </Card.Body>
             <Card.Footer className="text-center">
-              <SubmitBtn title="Create" />
+              <SubmitBtn
+                title="Create"
+                disabled={quotation.details.length === 0}
+              />
             </Card.Footer>
           </Card>
         </>

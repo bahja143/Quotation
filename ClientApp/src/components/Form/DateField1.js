@@ -15,7 +15,7 @@ const DateField1 = ({ name, label, required }) => {
       </FormLabel>
       <DateTime
         onChange={(e) => setFieldValue(name, e._d)}
-        onBlur={() => setFieldTouched(name)}
+        onOpen={() => setFieldTouched(name)}
         value={values[name] && new Date(values[name])}
         timeFormat={false}
         closeOnSelect
