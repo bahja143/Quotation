@@ -23,7 +23,6 @@ const groups = [
 
 export default function QuotationDetailModel({
   show,
-  setShow,
   rentalSum,
   components,
   accessories,

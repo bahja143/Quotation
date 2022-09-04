@@ -9,7 +9,7 @@ namespace Quotations.Modal
         [Required]
         public int CompanyId { get; set; }
         [Required]
-        public string RentSum { get; set; }
+        public int RentSum { get; set; }
         [Required]
         public DateTime RentStartDate { get; set; }
         [Required]

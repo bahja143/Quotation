@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Formik } from "formik";
 import FontAwesome from "react-fontawesome";
+import { toast } from "react-toastify";
 import * as Yup from "yup";
 
 import {
@@ -25,10 +26,11 @@ import ViewQuotationalDetailMODEL from "./ViewQuotationalDetailMODEL";
 import companyApi from "../../api/companiesApi";
 import branchesApi from "../../api/branchesApi";
 import customersApi from "../../api/customersApi";
+import quotationsApi from "../../api/quotationsApi";
 
 const categories = [
-  { label: "Domestic", values: "Domestic" },
-  { label: "International", values: "International" },
+  { label: "Domestic", value: "Domestic" },
+  { label: "International", value: "International" },
 ];
 const componentsData = [
   { id: 0, serviceName: "Accessories", status: false, amount: "" },
@@ -362,8 +364,9 @@ export default function Quotation() {
     }
     setShow(false);
   };
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values, { resetForm }) => {
     const data = { ...values, details: quotation.details };
+    data.rentSum = parseInt(data.rentSum);
     data.details.map((d) => {
       d.services.map((s) => {
         if (s.total) {
@@ -380,7 +383,39 @@ export default function Quotation() {
 
       return d;
     });
-    console.log(data);
+
+    const response = await quotationsApi.add(data);
+
+    if (response.ok) {
+      resetForm();
+      setQuotation({
+        id: 0,
+        category: "",
+        companyId: "",
+        branchId: "",
+        debitorId: "",
+        expiryDate: "",
+        rentStartDate: "",
+        rentEndDate: "",
+        rentSum: "",
+        details: [],
+        date: new Date(),
+      });
+      setQuotationDetail({
+        id: 0,
+        make: "",
+        model: "",
+        group: "",
+        remark: "",
+        services: [],
+        checkInLocation: "",
+        checkOutLocation: "",
+        numberOfVehicles: "",
+      });
+      return toast.success("Successful Created.");
+    }
+
+    return toast.error("Something went wrong.");
   };
 
   useEffect(() => {
@@ -511,6 +546,7 @@ export default function Quotation() {
                       <TextField
                         label="Total Rental Sum"
                         name="rentSum"
+                        type="number"
                         required
                       />
                       <FormGroup>

@@ -16,6 +16,8 @@ const DateField = ({ name, label, required }) => {
       <DateTime
         onChange={(e) => setFieldValue(name, e._d)}
         onOpen={() => setFieldTouched(name)}
+        initialValue={values[name] && new Date(values[name])}
+        initialViewDate={values[name] && new Date(values[name])}
         value={values[name] && new Date(values[name])}
         timeFormat={false}
         closeOnSelect
