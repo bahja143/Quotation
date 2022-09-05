@@ -44,8 +44,8 @@ const routes = [
   {
     exact: true,
     guard: GuestGuard,
-    path: "/auth/signin-1",
-    component: lazy(() => import("./views/auth/signin/SignIn1")),
+    path: "/auth/signin",
+    component: lazy(() => import("./views/auth/signIn/SignIn")),
   },
   {
     path: "*",
@@ -79,8 +79,18 @@ const routes = [
       },
       {
         exact: true,
-        path: "/quatation/form",
+        path: "/quotation/form",
         component: lazy(() => import("./views/Quotation/Quotation")),
+      },
+      {
+        exact: true,
+        path: "/quotation/quotations",
+        component: lazy(() => import("./views/Quotation/Quotations")),
+      },
+      {
+        exact: true,
+        path: "/quotation/report",
+        component: lazy(() => import("./views/Quotation/QuotationsReport")),
       },
       {
         path: "*",

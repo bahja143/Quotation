@@ -2,9 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using Quotations.Persistance;
 using Quotations.Modal;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Quotations.Controllers
 {
+    [Authorize]
     [Route("/api/branches")]
     public class BranchesController : Controller
     {

@@ -1,3 +1,5 @@
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using Quotations.Persistance;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,29 @@ builder.Services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
                           .AllowAnyMethod()
                           .AllowAnyHeader();
                }));
+builder.Services
+.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "JwtBearer";
+    options.DefaultChallengeScheme = "JwtBearer";
+})
+.AddJwtBearer("JwtBearer",
+JwtBearerOptions =>
+{
+    JwtBearerOptions.TokenValidationParameters =
+        new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey =
+                new SymmetricSecurityKey(Encoding
+                        .UTF8
+                        .GetBytes("14916F529E457B82EF438A51DB064B31ACDBD2505725FCA42606B428B2DBB7C9")),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(5)
+        };
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +51,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

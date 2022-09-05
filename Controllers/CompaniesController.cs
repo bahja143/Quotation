@@ -6,6 +6,7 @@ using Quotations.Modal;
 
 namespace Quotations.Controllers
 {
+    [Authorize]
     [Route("/api/companies")]
     public class CompaniesController : Controller
     {

@@ -3,11 +3,11 @@ import { Redirect } from "react-router-dom";
 import { BASE_URL } from "../../config/constant";
 
 const GuestGuard = ({ children }) => {
-  // const { isLoggedIn } = useAuth();
+  const isLoggedIn = localStorage["token"] ? true : false;
 
-  // if (isLoggedIn) {
-  //   return <Redirect to={BASE_URL} />;
-  // }
+  if (isLoggedIn) {
+    return <Redirect to={BASE_URL} />;
+  }
 
   return <React.Fragment>{children}</React.Fragment>;
 };

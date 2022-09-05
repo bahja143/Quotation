@@ -1,24 +1,36 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { ListGroup, Dropdown } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
+import JwtDecode from "jwt-decode";
 
 import { ConfigContext } from "../../../../contexts/ConfigContext";
-
 import avatar1 from "../../../../assets/images/user/avatar-2.jpg";
 
 const NavRight = () => {
   const configContext = useContext(ConfigContext);
   const { rtlLayout } = configContext.state;
+  const [user, setUser] = useState({});
+  const history = useHistory();
 
   const handleLogout = async () => {
     try {
-      //handleClose();
-      // await logout();
+      localStorage.removeItem("token");
+      history.go("/auth/signin");
     } catch (err) {
       console.error(err);
     }
   };
+  const handleLoad = () => {
+    try {
+      setUser(JwtDecode(localStorage.getItem("token")));
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  useEffect(() => {
+    handleLoad();
+  }, []);
   return (
     <React.Fragment>
       <ListGroup
@@ -40,8 +52,13 @@ const NavRight = () => {
             <Dropdown.Menu alignRight className="profile-notification">
               <div className="pro-head">
                 <img src={avatar1} className="img-radius" alt="User Profile" />
-                <span>John Doe</span>
-                <Link to="#" className="dud-logout" title="Logout">
+                <span>{user.name}</span>
+                <Link
+                  to="#"
+                  className="dud-logout"
+                  title="Logout"
+                  onClick={handleLogout}
+                >
                   <i className="feather icon-log-out" />
                 </Link>
               </div>
@@ -51,26 +68,6 @@ const NavRight = () => {
                 variant="flush"
                 className="pro-body"
               >
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-settings" /> Settings
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-user" /> Profile
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-mail" /> My Messages
-                  </Link>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" bsPrefix=" ">
-                  <Link to="#" className="dropdown-item">
-                    <i className="feather icon-lock" /> Lock Screen
-                  </Link>
-                </ListGroup.Item>
                 <ListGroup.Item as="li" bsPrefix=" ">
                   <Link to="#" className="dropdown-item" onClick={handleLogout}>
                     <i className="feather icon-log-out" /> Logout
