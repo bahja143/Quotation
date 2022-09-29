@@ -18,7 +18,7 @@ namespace Quotations.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> getAll()
+        public async Task<ActionResult> getAll()    
         {
             return Ok(await _context.Customers.ToListAsync());
         }
